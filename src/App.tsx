@@ -1,35 +1,43 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import { MsalAuthenticationTemplate, useMsal } from "@azure/msal-react";
+import { loginRequest } from "./auth/msalConfig";
+import "./App.css";
+import { InteractionType } from "@azure/msal-browser";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
+import { login, logout } from "./store/slices/userSlice";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
+  const { accounts } = useMsal();
+  console.log(accounts);
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.users);
+
+  // Sync MSAL authentication state with Redux store
+  useEffect(() => {
+    if (accounts.length > 0) {
+      // User is authenticated, store user info in Redux
+      dispatch(login(accounts[0]));
+    } else {
+      // User is not authenticated
+      dispatch(logout());
+    }
+  }, [accounts, dispatch]);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
+    <MsalAuthenticationTemplate
+      authenticationRequest={loginRequest}
+      interactionType={InteractionType.Redirect}
+    >
+      <h1>Secure Claims Portal</h1>
+      <h2>Welcome {user?.name || ""}</h2>
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </MsalAuthenticationTemplate>
+  );
 }
 
-export default App
+export default App;
