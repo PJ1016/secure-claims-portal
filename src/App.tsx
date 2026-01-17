@@ -1,19 +1,18 @@
-import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { MsalAuthenticationTemplate, useMsal } from "@azure/msal-react";
-import { loginRequest } from "./auth/msalConfig";
-import "./App.css";
 import { InteractionType } from "@azure/msal-browser";
-import { useAppDispatch, useAppSelector } from "./store/hooks";
+import { loginRequest } from "./auth/msalConfig";
+import HomePage from "./pages/HomePage";
+import { useEffect } from "react";
+import { useAppDispatch } from "./store/hooks";
 import { login, logout } from "./store/slices/userSlice";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0);
   const { accounts } = useMsal();
-  console.log(accounts);
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.users);
 
-  // Sync MSAL authentication state with Redux store
+  // Sync MSAL authentication state with Redux store globally
   useEffect(() => {
     if (accounts.length > 0) {
       // User is authenticated, store user info in Redux
@@ -25,18 +24,17 @@ function App() {
   }, [accounts, dispatch]);
 
   return (
-    <MsalAuthenticationTemplate
-      authenticationRequest={loginRequest}
-      interactionType={InteractionType.Redirect}
-    >
-      <h1>Secure Claims Portal</h1>
-      <h2>Welcome {user?.name || ""}</h2>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-    </MsalAuthenticationTemplate>
+    <Router>
+      <MsalAuthenticationTemplate
+        authenticationRequest={loginRequest}
+        interactionType={InteractionType.Redirect}
+      >
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          {/* Add more routes here as needed */}
+        </Routes>
+      </MsalAuthenticationTemplate>
+    </Router>
   );
 }
 

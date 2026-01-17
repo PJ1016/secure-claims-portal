@@ -14,5 +14,5 @@ export const msalInstance = new PublicClientApplication({
 });
 
 export const loginRequest = {
-  scopes: ["User.Read"],
+  scopes: ["api://fb517add-77fb-489a-836f-2275e8dccebd/claims.access"],
 };
